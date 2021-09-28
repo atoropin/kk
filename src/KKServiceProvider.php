@@ -4,7 +4,7 @@ namespace Toropin\KK;
 
 use Illuminate\Support\ServiceProvider;
 
-class KeycloakServiceProvider extends ServiceProvider
+class KKServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
