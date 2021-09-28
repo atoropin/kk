@@ -3,6 +3,7 @@
 namespace Toropin\KK;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
 
 class Tokenizer
 {
@@ -14,29 +15,33 @@ class Tokenizer
 
     public function __construct()
     {
-        $this->tokenUrl = config('kk_test.token_url');
-        $this->clientId = config('kk_test.client_id');
-        $this->clientSecret = config('kk_test.client_secret');
+        $this->tokenUrl = config('keycloak_notify.token_url');
+        $this->clientId = config('keycloak_notify.client_id');
+        $this->clientSecret = config('keycloak_notify.client_secret');
     }
 
     public function getToken(): ?string
     {
+        $this->accessToken = Cache::get('keycloak_notify_access_token');
+
         if ($this->accessToken === null) {
-            $this->accessToken = $this->renewAccessToken($this->clientId, $this->clientSecret, $this->tokenUrl);
+            $this->accessToken = $this->sendTokenRequest($this->clientId, $this->clientSecret, $this->tokenUrl);
+
+            Cache::put('keycloak_notify_access_token', $this->accessToken, (3600 - 300));
         }
 
         return $this->accessToken;
     }
 
     /**
-     * Refresh access token.
+     * Send access token request.
      *
      * @param  $clientId
      * @param  $clientSecret
      * @param  $tokenUrl
      * @return string
      */
-    protected function renewAccessToken($clientId, $clientSecret, $tokenUrl): string
+    protected function sendTokenRequest($clientId, $clientSecret, $tokenUrl): string
     {
         $client = new Client(['verify' => false]);
 
