@@ -1,0 +1,26 @@
+{
+    "name": "atoropin/kk",
+    "description": "Sending test notifications to KK",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrey Toropin",
+            "email": "andreitoropin@ya.ru"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Toropin\\KK\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Toropin\\KK\\KKServiceProvider"
+            ]
+        }
+    }
+}
