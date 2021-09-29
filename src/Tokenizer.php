@@ -15,19 +15,19 @@ class Tokenizer
 
     public function __construct()
     {
+        $this->accessToken = Cache::get('keycloak_notify_access_token');
+
         $this->tokenUrl = config('keycloak_notify.token_url');
         $this->clientId = config('keycloak_notify.client_id');
         $this->clientSecret = config('keycloak_notify.client_secret');
     }
 
-    public function getToken(): ?string
+    public function getToken(): string
     {
-        $this->accessToken = Cache::get('keycloak_notify_access_token');
-
         if ($this->accessToken === null) {
-            $this->accessToken = $this->sendTokenRequest($this->clientId, $this->clientSecret, $this->tokenUrl);
+            $response = $this->refreshToken($this->clientId, $this->clientSecret, $this->tokenUrl);
 
-            Cache::put('keycloak_notify_access_token', $this->accessToken, (3600 - 300));
+            Cache::put('keycloak_notify_access_token', $response->access_token, ($response->expires_in - 300));
         }
 
         return $this->accessToken;
@@ -39,9 +39,9 @@ class Tokenizer
      * @param  $clientId
      * @param  $clientSecret
      * @param  $tokenUrl
-     * @return string
+     * @return object
      */
-    protected function sendTokenRequest($clientId, $clientSecret, $tokenUrl): string
+    protected function refreshToken($clientId, $clientSecret, $tokenUrl): object
     {
         $client = new Client(['verify' => false]);
 
@@ -59,6 +59,6 @@ class Tokenizer
             ->getBody()
             ->getContents();
 
-        return json_decode($response)->access_token;
+        return json_decode((string) $response, false);
     }
 }
