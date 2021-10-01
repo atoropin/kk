@@ -2,10 +2,22 @@
 
 namespace Toropin\KK;
 
+use GuzzleHttp\Client;
 use Illuminate\Notifications\Notification;
 
-class KeycloakChannel extends AbstractKeycloakChannel
+class KeycloakChannel
 {
+    private Client $client;
+
+    private Tokenizer $tokenizer;
+
+    public function __construct(Client $client, Tokenizer $tokenizer)
+    {
+        $this->client = $client;
+
+        $this->tokenizer = $tokenizer;
+    }
+
     /**
      * Send the given notification.
      *
@@ -18,8 +30,10 @@ class KeycloakChannel extends AbstractKeycloakChannel
     {
         $message = $notification->toKeycloak($notifiable);
 
+        $notifyUrl = config('kk_test.notify_url');
+
         return $this->client->request(
-            'POST', $this->notifyUrl . 'send-notification', [
+            'POST', $notifyUrl . 'send-notification', [
                 'json' => $message,
                 'headers' => [
                     'Content-Type' => 'application/json',
